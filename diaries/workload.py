@@ -14,17 +14,39 @@ logger = logging.getLogger(__name__)
 
 
 class Workload:
+    """
+    The Workload class is responsible for fetching the developer diary for a selected game.
+    It Orchestrates LinkExtractor and BlogScraper classes.
+    """
+
     def __init__(self,
-                 selected_game: str = None,
+                 selected_game: str,
                  url: str = 'https://wikis.paradoxplaza.com/',
                  destination: str = 'local'):
+        """
+        Initializes the Workload with the given parameters.
+
+        Args:
+        - selected_game: the selected Paradox Interactive game
+        - url: Source of list of games
+        - destination: the destination where the CSV file will be saved; currently supported: s3 & local
+        """
         self.url = url
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"}
         self.selected_game = selected_game
         self.destination = destination
 
-    def _fetch_wiki(self):
+    def _fetch_wiki(self) -> dict:
+        """
+        Reads the list of games from url (wiki page of all Paradox Interactive games).
+
+        Args:
+        - None
+
+        Returns:
+        - wikis: dictionary of game and link pairs 
+        """
         try:
             logger.info('Fetching %s...', self.url)
             result = requests.get(
@@ -41,6 +63,15 @@ class Workload:
         return wikis
 
     def _fetch_diary(self, wiki_link) -> str:
+        """
+        Extracts the url of the Developer diary from a wiki link.
+
+        Args:
+        - wiki_link: The link of the game's wiki landing page
+
+        Returns:
+        - absolute_path: The absolute URL path of the Developer Diary.
+        """
         result = requests.get(wiki_link, headers=self.headers, timeout=60)
         soup = BeautifulSoup(result.content, 'lxml')
 
@@ -56,11 +87,31 @@ class Workload:
 
     @staticmethod
     def _select_game(games: list) -> str:
+        """
+        Prompt to choose a game from list of games. Used when --game tag is null.
+
+        Args:
+        - games: list of Pardox gamex to choose from
+
+        Returns:
+        - selected_game: str of the game chosen
+        """
         selected_game = questionary.select(
             "Which game's developer diary do you want?", choices=games).ask()
         return selected_game
 
-    def main(self):
+    def main(self) -> None:
+        """
+        Executes the tasks handled by Workload class.
+        Namely, it fetches the main wiki page of Paradox & based on the selected game it finds the absolute path of the developer diary.
+        Then, it executes LinkExtractor() and BlogScraper().
+
+        Args:
+        - None
+
+        Returns:
+        - None
+        """
         wikis = self._fetch_wiki()
         selectable_games = list(wikis.keys())
 
