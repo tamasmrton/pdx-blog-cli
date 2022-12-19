@@ -152,7 +152,6 @@ class LinkExtractor():
         """
         logger.info('Downloading developer diaries from %s', self.start_url)
         df = self._get_dev_diaries(match='Title and Link')
-        df.to_csv('test2.csv')
         self._clean_dataframe(df)
         try:
             self._write_dataframe(df)
