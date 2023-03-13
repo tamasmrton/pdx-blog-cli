@@ -1,6 +1,4 @@
-# pdx-blog scraper
-
-## This is a python project that scrapes developer diaries of Paradox games.
+# pdx-blog cli
 
 ### Description
 
